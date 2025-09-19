@@ -41,14 +41,25 @@ namespace SecureAuthPrototype.Controllers
                 }
             }
 
+            bool successfulLogin = false;
+
             if (storedHash != null)
             {
-                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, storedHash);
-                if (isPasswordValid)
-                    return Content("Login successful!");
+                if (BCrypt.Net.BCrypt.Verify(password, storedHash))
+                {
+                    successfulLogin = true;
+                }
             }
 
-            return Content("Invalid username or password.");
+            if (successfulLogin)
+            {
+                return Content("Login successful!");
+            }
+            else
+            {
+                ViewData["ErrorMessage"] = "Invalid username or password.";
+                return View();
+            }
         }
     }
 }

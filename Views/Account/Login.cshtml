@@ -8,16 +8,17 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>Страница входа</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; }
-        .login-form { padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        input { display: block; margin-bottom: 1rem; padding: 0.5rem; width: 250px; }
-        button { padding: 0.5rem; width: 100%; cursor: pointer; }
-    </style>
+    <link rel="stylesheet" href="~/css//login-style.css"/>
 </head>
 <body>
     <div class="login-form">
         <h2>Вход в систему</h2>
+        @if (ViewData["ErrorMessage"] != null)
+        {
+            <div class="error-message">
+                @ViewData["ErrorMessage"]
+            </div>
+        }
         <form method="post">
             <input type="text" name="username" placeholder="Логин" required />
             <input type="password" name="password" placeholder="Пароль" required />
