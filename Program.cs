@@ -45,6 +45,26 @@ app.UseRouting(); // выбор эндпоинта (метода контроллера) для обработки запроса
 app.UseAuthentication(); // аутентификация 
 app.UseAuthorization(); // авторизация
 
+app.MapControllers(); // использование маршрутизации для всех контроллеров
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}"); // настройка марщрутизации по уиолчанию для MVC
+
+// --- НАЧАЛО ИСПРАВЛЕННОГО ДИАГНОСТИЧЕСКОГО БЛОКА ---
+app.MapGet("/debug/routes", (IEnumerable<EndpointDataSource> endpointSources) => // https://localhost:7105/debug/routes
+{
+    var endpoints = endpointSources.SelectMany(es => es.Endpoints);
+    var output = endpoints
+        .OfType<RouteEndpoint>() // Выбираем только эндпоинты, у которых есть маршрут
+        .Select(e =>
+        {
+            var controller = e.Metadata.GetMetadata<Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor>()?.ControllerName;
+            var action = e.Metadata.GetMetadata<Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor>()?.ActionName;
+            var pattern = e.RoutePattern.RawText; // <-- ИЗМЕНЕНИЕ ЗДЕСЬ
+            var httpMethods = string.Join(", ", e.Metadata.OfType<HttpMethodMetadata>().SelectMany(m => m.HttpMethods));
+
+            return $"Pattern: {pattern} | Methods: {httpMethods} | Controller: {controller}.{action}";
+        });
+    return string.Join("\n", output);
+});
+// --- КОНЕЦ ИСПРАВЛЕННОГО ДИАГНОСТИЧЕСКОГО БЛОКА ---
 
 app.Run(); // запуск приложения

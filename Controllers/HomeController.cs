@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SecureAuthPrototype.Controllers
 {
+
+    [Route("[controller]")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -14,11 +16,15 @@ namespace SecureAuthPrototype.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
+        [Route("")]
+        [Route("Index")]
         public IActionResult Index()
         {
             return View();
         }
 
+        [HttpGet("Privacy")]
         public IActionResult Privacy()
         {
             return View();
@@ -31,7 +37,7 @@ namespace SecureAuthPrototype.Controllers
         }
 
         [Authorize] // доступ к этому методу только у пользователей с валидным JWT-токеном
-        [HttpGet] // метод отвечает на HTTP GET-запросы
+        [HttpGet("GetSecretData")] // метод отвечает на HTTPGET-запросы
         public IActionResult GetSecretData()
         {
             var data = new { Message = "This is a secret message only for aythorized users!" };
