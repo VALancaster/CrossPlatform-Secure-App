@@ -1,0 +1,38 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.login-form {
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.error-message {
+    color: #d9534f;
+    background-color: #f2dede;
+    border: 1px solid #d9534f;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+input {
+    display: block;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    width: 250px;
+}
+
+button {
+    padding: 0.5rem;
+    width: 100%;
+    cursor: pointer;
+}

@@ -1,0 +1,24 @@
+﻿@{
+    // у данной страницы нет мастер-шаблона (layout)
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Страница входа</title>
+    <link rel="stylesheet" href="~/css//login-style.css"/>
+</head>
+<body>
+    <div class="login-form">
+        <h2>Вход в систему</h2>
+        <div asp-validation-summary="ModelOnly" class="error-message"></div>
+        <form method="post">
+            <input type="text" name="username" placeholder="Логин" required />
+            <input type="password" name="password" placeholder="Пароль" required />
+            <button type="submit">Войти</button>
+        </form>
+    </div>
+</body>
+</html>
