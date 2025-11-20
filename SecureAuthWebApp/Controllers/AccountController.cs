@@ -1,18 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql; // для работы с Postgres
-using System.Threading.Tasks;
 using SecureAuth.WebApp.Models;
+using SecureAuth.WebApp.Services; // для работы с JwtService
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SecureAuth.WebApp.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IConfiguration _configuration; // конфигурация приложения
+        private readonly JwtService _jwtService; // сервис для работы с JWT
 
-        public AccountController(IConfiguration configuration) // внедрение конфигурации для получения доступа к строке подключения
+        public AccountController(IConfiguration configuration, JwtService jwtService) // внедрение конфигурации для получения доступа к строке подключения и настройка JWT
         {
             _configuration = configuration;
+            _jwtService = jwtService;
         }
 
 
@@ -28,22 +37,44 @@ namespace SecureAuth.WebApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken] // отклонение подделанных POST-запросов с других сайтов
         public async Task<IActionResult> Login([FromForm] string username, [FromForm] string password)
-        {
-            if (ModelState.IsValid) // модель валидна 
+        {   
+            if (await ValidateUser(username, password))
             {
-                bool isUserValid = await ValidateUser(username, password);
-                if (isUserValid)
+                // Создаем профиль пользователя для Cookie
+                var claims = new List<Claim> { new Claim(ClaimTypes.Name, username)};
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties();
+
+                // Выполнение входа через Cookie
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties); // Создание зашифрованной HttpOnly Cookie
+
+                // Генерация JWT для API-клиентов
+                var token = _jwtService.GenerateJwtToken(username);
+
+                // Добавление JWT в обычную Cookie
+                Response.Cookies.Append("JwtToken", token, new CookieOptions
                 {
-                    // Успешный вход через браузер
-                    // TODO: создание Cookie
-                    return RedirectToAction("Index", "Home");
-                }
+                    HttpOnly = true, // Cookie недоступна для JavaScript на клиенте (защита от XSS-атак)
+                    Secure = true, // Cookie будет передаваться только по HTTPS-соединению (защита от MITM-атак)
+                    SameSite = SameSiteMode.Strict, // Cookie не будет отправляться вместе с кросс-сайтовыми запросами (защита от CSRF-атак)
+                    Expires = DateTime.UtcNow.AddMinutes(120) // установка времени жизни Cookie в 120 минут
+                });
 
-                // если пользователь не прошел валидацию, добавляем ошибку в ModelState
-                ModelState.AddModelError(string.Empty, "Invalid username or password.");
+                return RedirectToAction("Index", "Home"); // перенаправление на главную страницу после успешного входа
             }
-
+            ModelState.AddModelError(string.Empty, "Invalid username or password."); // если пользователь не прошел валидацию, добавляем ошибку в ModelState
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme); // Выполнение выхода из системы 
+            Response.Cookies.Delete("JwtToken"); // Удаление JWT Cookie
+            return RedirectToAction("Login", "Account"); // перенаправление на страницу входа после выхода
         }
 
         private async Task<bool> ValidateUser(string username, string password) // проверка пользователя по БД
@@ -67,6 +98,7 @@ namespace SecureAuth.WebApp.Controllers
             return storedHash != null && BCrypt.Net.BCrypt.Verify(password, storedHash);
         }
 
+
         // метод вызывается, когда пользователь заходит на /Account/Register
         [HttpGet]
         public IActionResult Register()
@@ -81,8 +113,7 @@ namespace SecureAuth.WebApp.Controllers
         {
             if (ModelState.IsValid) // если данные прошли валидацию (атрибуты в RegisterViewModel)
             {
-                bool isUsernameTaken = await IsUsernameTaken(model.Username); // проверка, занят ли логин
-                if (isUsernameTaken) // имя пользователя занято
+                if (await IsUsernameTaken(model.Username)) // имя пользователя занято
                 {
                     ModelState.AddModelError(nameof(model.Username), "This username is already occupied.");
                     return View(model);

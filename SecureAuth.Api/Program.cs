@@ -16,6 +16,7 @@ namespace SecureAuth.Api
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddGrpc(); // добавление сервисов для gRPC
 
             // добавление и настройка сервисов аутентификации
             builder.Services.AddAuthentication(options =>
@@ -53,6 +54,7 @@ namespace SecureAuth.Api
             app.UseAuthentication(); // аутентификация 
             app.UseAuthorization(); // авторизация
             app.MapControllers(); // использование маршрутизации для всех контроллеров
+            app.MapGrpcService<Services.AuthGrpcService>(); // регистрация gRPC-сервиса
 
             app.Run(); // запуск приложения
         }

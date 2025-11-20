@@ -24,6 +24,7 @@ namespace SecureAuth.WebApp.Controllers
             return View();
         }
 
+        [Authorize]
         [HttpGet("Privacy")]
         public IActionResult Privacy()
         {

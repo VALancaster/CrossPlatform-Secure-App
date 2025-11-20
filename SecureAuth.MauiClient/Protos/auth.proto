@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option csharp_namespace = "SecureAuth.Grpc"; // namespace, который будет использоватьс€ в сгенерированном C# коде
+
+package auth;
+
+// —ервис аутентификации
+service Authenticator 
+{
+	rpc GetToken (AuthRequest) returns (AuthReply); // метод дл€ получени€ токена
+}
+
+message AuthRequest // сообщение-запрос
+{
+	string username = 1;
+	string password = 2;
+}
+
+message AuthReply // сообщение-ответ
+{
+	string jwt_token = 1;
+	bool success = 2;
+	string error_message = 3;
+}
