@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SecureAuth.Api.Services;
 
 
 namespace SecureAuth.Api
@@ -17,6 +18,9 @@ namespace SecureAuth.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddGrpc(); // добавление сервисов для gRPC
+
+            builder.Services.AddSingleton<JwtService>(); // регистрация сервиса для работы с JWT-токенами
+            builder.Services.AddScoped<UserService>(); // регистрация сервиса для работы с пользователями и БД
 
             // добавление и настройка сервисов аутентификации
             builder.Services.AddAuthentication(options =>
