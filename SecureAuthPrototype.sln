@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashGenerator", "HashGenera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureAuth.Api", "SecureAuth.Api\SecureAuth.Api.csproj", "{F0FA2E09-25A1-11BA-8AE9-A5AE8D0FEA0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureAuth.WebApp", "SecureAuthWebApp\SecureAuth.WebApp.csproj", "{169B1D6D-8AE6-0EB0-406D-01F745534345}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureAuth.WebApp", "SecureAuth.WebApp\SecureAuth.WebApp.csproj", "{169B1D6D-8AE6-0EB0-406D-01F745534345}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureAuth.MauiClient", "SecureAuth.MauiClient\SecureAuth.MauiClient.csproj", "{A5F433FD-FD4E-4056-ABC1-41F94C894755}"
 EndProject

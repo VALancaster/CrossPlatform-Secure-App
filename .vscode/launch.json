@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET: Launch API Server",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/SecureAuth.Api/bin/Debug/net8.0/SecureAuth.Api.dll",
+            "preLaunchTask": "dotnet: build ${workspaceFolder}/SecureAuth.Api/SecureAuth.Api.csproj",
+            "cwd": "${workspaceFolder}/SecureAuth.Api",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET MAUI: Launch Client",
+            "type": "maui",
+            "request": "launch",
+            "project": "${workspaceFolder}/SecureAuth.MauiClient/SecureAuth.MauiClient.csproj",
+            "preLaunchTask": "dotnet: build"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "API + MAUI Client (MULTIPLE STARTUP)",
+            "configurations": [
+                ".NET: Launch API Server",
+                ".NET MAUI: Launch Client"
+            ]
+        }
+    ]
+}
