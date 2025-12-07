@@ -16,7 +16,7 @@ namespace SecureAuth.MauiClient
 
         private void InitializeGrpcClient(IServiceProvider serviceProvider)
         {
-            var serverAddress = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7053" : "https://localhost:7053";
+            var serverAddress = "https://172.20.10.13:7053";
 
 #if WINDOWS
             // на Windows используется специальный HttpMessageHandler, зарегестрированный в MauiProgram.cs
@@ -68,7 +68,7 @@ namespace SecureAuth.MauiClient
             {
                 txtResult.Text = $"EXCEPTION:\n{ex.Message}"; // показ ошибки, если сервер недоступен или другая проблема
             }
-            finally 
+            finally
             {
                 LoginButton.IsEnabled = true; // включение кнопки обратно
             }
