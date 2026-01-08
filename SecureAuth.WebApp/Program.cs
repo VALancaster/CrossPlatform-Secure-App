@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using SecureAuth.WebApp.Services;
 using System.Text;
+using System.IO;
 
 
 namespace SecureAuth.WebApp
@@ -14,6 +16,10 @@ namespace SecureAuth.WebApp
             // 1. Настройка сервисов 
 
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddDataProtection() // Добавление конфигурации защиты ключей
+                .PersistKeysToFileSystem(new DirectoryInfo("/app/keys")) // Сохранение ключей в папке /app/keys
+                .SetApplicationName("CrossPlatformSecureApp"); // Уникальное имя приложения
 
             builder.Services.AddControllersWithViews(); // Добавление в приложение сервисов, необходимых для работы по шаблону MVC
 
@@ -89,6 +95,8 @@ namespace SecureAuth.WebApp
             app.UseAuthorization(); // авторизация
 
             app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}"); // настройка марщрутизации по умолчанию для MVC
+
+            app.Urls.Add("http://*:8080"); // прослушивание всех сетевых интерфейсов внутри контейнера
 
             app.Run(); // запуск приложения
         }

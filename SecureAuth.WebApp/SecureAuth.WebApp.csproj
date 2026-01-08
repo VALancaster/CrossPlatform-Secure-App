@@ -6,12 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>4368065f-8428-42d0-ac2a-eb0dca0b36b2</UserSecretsId>
 	<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 

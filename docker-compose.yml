@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+    # API сервер
+    api:
+        build: 
+            context: .
+            dockerfile: SecureAuth.Api/Dockerfile
+        ports:
+            - "8001:8080" # внешний порт 8001 -> внутренний порт 8080
+        depends_on:
+            - db
+        volumes:
+            - apidata:/root/.aspnet/DataProtection-Keys
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+            - Jwt__Key=Super_secure_ULTRA_secure_password_for_my_jwt_KEEP_IT_SAFE!!!
+            - Jwt__Issuer=MyAuthServer
+            - Jwt__Audience=MyApiClient
+            - ConnectionStrings__DefaultConnection=Host=db;Database=secureauthdb;Username=secureauthuser;Password=secureauthpassword
+    
+    # WebApp сервер
+    webapp:
+        build: 
+            context: .
+            dockerfile: SecureAuth.WebApp/Dockerfile
+        ports:
+            - "8002:8080" # внешний порт 8002 -> внутренний порт 8080
+        depends_on:
+            - db
+        volumes:
+            - webappkeys:/app/keys # Вечное хранилище для ключей ASP.NET Core Data Protection
+            - webappdata:/root/.aspnet/DataProtection-Keys # Вечное хранилище для DataProtection-Keys (для совместимости)
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+            - Jwt__Key=Super_secure_ULTRA_secure_password_for_my_jwt_KEEP_IT_SAFE!!!
+            - Jwt__Issuer=MyAuthServer
+            - Jwt__Audience=MyApiClient
+            - ConnectionStrings__DefaultConnection=Host=db;Database=secureauthdb;Username=secureauthuser;Password=secureauthpassword
+
+    # База данных PostgreSQL
+    db:
+        image: postgres:15
+        restart: always
+        environment:
+            - POSTGRES_DB=secureauthdb
+            - POSTGRES_USER=secureauthuser
+            - POSTGRES_PASSWORD=secureauthpassword
+        ports:
+            - "5432:5432" # внешний порт 5432 -> внутренний порт 5432
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:  
+    apidata:
+    webappkeys:
+    webappdata:

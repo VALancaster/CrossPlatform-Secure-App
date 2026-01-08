@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.IdentityModel.Tokens;
@@ -71,6 +71,8 @@ namespace SecureAuth.Api
             app.UseAuthorization(); // �����������
             app.MapControllers(); // ������������� ������������� ��� ���� ������������
             app.MapGrpcService<Services.AuthGrpcService>(); // ����������� gRPC-�������
+
+            app.Urls.Add("http://*:8080"); // прослушивание всех сетевых интерфейсов внутри контейнера
 
             app.Run(); // ������ ����������
         }
