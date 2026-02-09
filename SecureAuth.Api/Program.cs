@@ -1,9 +1,11 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
 using SecureAuth.Api.Services;
-
+using System.Text;
+using System.Threading.RateLimiting;
 
 namespace SecureAuth.Api
 {
@@ -15,17 +17,6 @@ namespace SecureAuth.Api
 
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.WebHost.ConfigureKestrel(serverOptions =>
-            {
-                serverOptions.ConfigureHttpsDefaults(listenOptions =>
-                {
-                    listenOptions.ServerCertificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(
-                        "device.pfx",
-                        builder.Configuration["Kestrel:Certificates:Default:Password"]
-                    );
-                });
-            });
-
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -33,6 +24,33 @@ namespace SecureAuth.Api
 
             builder.Services.AddSingleton<JwtService>(); // ����������� ������� ��� ������ � JWT-��������
             builder.Services.AddScoped<UserService>(); // ����������� ������� ��� ������ � �������������� � ��
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration["Redis_Host"] + ":6379";
+                options.InstanceName = "RateLimitInstance";
+            });
+
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests; // глобальная настройка 
+
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                {
+                    var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                    return RateLimitPartition.GetTokenBucketLimiter(partitionKey, key =>
+                        new TokenBucketRateLimiterOptions
+                        {
+                            TokenLimit = 10, // максимальное количество запросов сразу
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst, // порядок обработки запросов в очереди
+                            QueueLimit = 0, // максимальное количество запросов в очереди
+                            ReplenishmentPeriod = TimeSpan.FromSeconds(1), // период пополнения токенов
+                            TokensPerPeriod = 2, // добавлять 2 токена в секунду
+                            AutoReplenishment = true // автоматическое пополнение
+                        });
+                });
+            });
 
             // ���������� � ��������� �������� ��������������
             builder.Services.AddAuthentication(options =>
@@ -43,9 +61,9 @@ namespace SecureAuth.Api
             })
             .AddJwtBearer(options =>
             {
-                // ����������� ������� �������� �������� Jwt-�������
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                // ����������� ������� �������� �������� Jwt-�������
                     ValidateIssuer = true, // ��������� �������� ������
                     ValidateAudience = true, // ��������� ����������� ������
                     ValidateLifetime = true, // ��������� ���� �������� ������
@@ -58,6 +76,23 @@ namespace SecureAuth.Api
                 };
             });
 
+            builder.Services.AddRateLimiter(options =>
+            {
+                // политика ограничения "fixed"
+                options.AddFixedWindowLimiter(policyName: "fixed", fixedOptions =>
+                {
+                    fixedOptions.PermitLimit = 10; // Максимальное разрешенное количество запросов
+                    fixedOptions.Window = TimeSpan.FromSeconds(10); // За 10 секунд
+                    fixedOptions.QueueLimit = 0; // Не ставить в очередь 
+                });
+
+                // политика по умолчанию: если [EnableRateLimiting] не указан, использовать эту
+                options.RejectionStatusCode = 429; // 429 Too Many Requests
+            });
+
+            // Регистрация Redis (может понадобиться при масштабировании)
+            // builder.Services.AddStackExchangeRedisCache(options => { options.Configuration = "redis:6379"; } );
+
             // 2. ��������� ��������� ��������� ��������
 
             var app = builder.Build(); // ������ ����������� �������� � ������� ���������� 
@@ -65,8 +100,8 @@ namespace SecureAuth.Api
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            app.UseHttpsRedirection(); // ��������������� ���� HTTP-�������� �� HTTPS
             app.UseRouting(); // ����� ��������� (������ �����������) ��� ��������� �������
+            app.UseRateLimiter();
             app.UseAuthentication(); // �������������� 
             app.UseAuthorization(); // �����������
             app.MapControllers(); // ������������� ������������� ��� ���� ������������

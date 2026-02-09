@@ -6,10 +6,11 @@ services:
         build: 
             context: .
             dockerfile: SecureAuth.Api/Dockerfile
-        ports:
-            - "8001:8080" # внешний порт 8001 -> внутренний порт 8080
+        #ports:
+        #    - "8001:8080" # внешний порт 8001 -> внутренний порт 8080
         depends_on:
             - db
+            - redis
         volumes:
             - apidata:/root/.aspnet/DataProtection-Keys
         environment:
@@ -18,16 +19,19 @@ services:
             - Jwt__Issuer=MyAuthServer
             - Jwt__Audience=MyApiClient
             - ConnectionStrings__DefaultConnection=Host=db;Database=secureauthdb;Username=secureauthuser;Password=secureauthpassword
+            - ASPNETCORE_URLS=http://+:8080
+            - Redis_Host=redis
     
     # WebApp сервер
     webapp:
         build: 
             context: .
             dockerfile: SecureAuth.WebApp/Dockerfile
-        ports:
-            - "8002:8080" # внешний порт 8002 -> внутренний порт 8080
+        #ports:
+        #    - "8002:8080" # внешний порт 8002 -> внутренний порт 8080
         depends_on:
             - db
+            - redis
         volumes:
             - webappkeys:/app/keys # Вечное хранилище для ключей ASP.NET Core Data Protection
             - webappdata:/root/.aspnet/DataProtection-Keys # Вечное хранилище для DataProtection-Keys (для совместимости)
@@ -37,6 +41,30 @@ services:
             - Jwt__Issuer=MyAuthServer
             - Jwt__Audience=MyApiClient
             - ConnectionStrings__DefaultConnection=Host=db;Database=secureauthdb;Username=secureauthuser;Password=secureauthpassword
+            - ASPNETCORE_URLS=http://+:8080
+            - Redis_Host=redis
+
+    # NGINX-сервер - точка входа для HTTPS-трафика и применения Rate Limiting
+    nginx:
+        image: nginx:stable-alpine
+        container_name: nginx_proxy
+        ports:
+            # для http
+            - "80:80" # внешний порт 80 -> внутренний порт 80 
+            # для https
+            - "443:443" # внешний порт 443 -> внутренний порт 443
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # настройки NGINX
+            - ./nginx/certs:/etc/nginx/certs:ro # папка для SSL-сертификатов
+        depends_on:
+            - api
+            - webapp
+            - redis
+
+    # Redis - сервер счетчиков для DoS-защиты (Rate Limiting)
+    redis:
+        image: redis:latest
+        container_name: redis_cache
 
     # База данных PostgreSQL
     db:
@@ -52,7 +80,9 @@ services:
             - postgres_data:/var/lib/postgresql/data
 
 volumes:
-    postgres_data:  
+    postgres_data:
+        # external: true 
+        name: secure_auth_postgres_prod_data
     apidata:
     webappkeys:
     webappdata:

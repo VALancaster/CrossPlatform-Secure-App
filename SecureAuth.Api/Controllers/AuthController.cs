@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices.Marshalling; // для чтения appsettings.json
 using System.Threading.Tasks;
 using SecureAuth.Api.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 namespace SecureAuthPrototype.Controllers
@@ -31,6 +32,7 @@ namespace SecureAuthPrototype.Controllers
         }
 
         [HttpPost("token")] // принимает POST-запросы /api/Auth/token
+        [EnableRateLimiting("fixed")] // применение политики ограничения запросов "fixed"
         public async Task<IActionResult> GetToken([FromBody] AuthRequest request)
         {
             bool isUserValid = await _userService.ValidateUser(request.Username, request.Password);

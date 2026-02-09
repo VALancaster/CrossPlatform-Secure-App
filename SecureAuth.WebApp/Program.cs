@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
 using SecureAuth.WebApp.Services;
 using System.Text;
 using System.IO;
+using System.Threading.RateLimiting;
 
 
 namespace SecureAuth.WebApp
@@ -16,6 +19,33 @@ namespace SecureAuth.WebApp
             // 1. Настройка сервисов 
 
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration["Redis_Host"] + ":6379";
+                options.InstanceName = "RateLimitInstance";
+            });
+
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests; // глобальная настройка 
+
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                {
+                    var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    
+                    return RateLimitPartition.GetTokenBucketLimiter(partitionKey, key =>
+                        new TokenBucketRateLimiterOptions
+                        {
+                            TokenLimit = 10, // максимальное количество запросов сразу
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst, // порядок обработки запросов в очереди
+                            QueueLimit = 0, // максимальное количество запросов в очереди
+                            ReplenishmentPeriod = TimeSpan.FromSeconds(1), // период пополнения токенов
+                            TokensPerPeriod = 2, // добавлять 2 токена в секунду
+                            AutoReplenishment = true // автоматическое пополнение
+                        });
+                });
+            });
 
             builder.Services.AddDataProtection() // Добавление конфигурации защиты ключей
                 .PersistKeysToFileSystem(new DirectoryInfo("/app/keys")) // Сохранение ключей в папке /app/keys
@@ -88,9 +118,9 @@ namespace SecureAuth.WebApp
                 app.UseHsts(); // включение  HSTS, заставляющего браузер общаться с сайтом только по HTTPS
             }
 
-            app.UseHttpsRedirection(); // перенаправление всех HTTP-запросов на HTTPS
             app.UseStaticFiles(); // возможность серверу отдавать статические файлы (CSS, JS) из папки wwwroot
             app.UseRouting(); // выбор эндпоинта (метода контроллера) для обработки запроса
+            app.UseRateLimiter();
             app.UseAuthentication(); // аутентификация 
             app.UseAuthorization(); // авторизация
 
