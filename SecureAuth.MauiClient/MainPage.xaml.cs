@@ -16,7 +16,7 @@ namespace SecureAuth.MauiClient
 
         private void InitializeGrpcClient(IServiceProvider serviceProvider)
         {
-            var serverAddress = "http://80.90.187.200:8001";
+            var serverAddress = "http://195.122.224.234:8001";
 
 #if WINDOWS
             // на Windows используется специальный HttpMessageHandler, зарегестрированный в MauiProgram.cs
