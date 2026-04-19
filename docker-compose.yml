@@ -5,7 +5,8 @@ services:
     api:
         build: 
             context: .
-            dockerfile: SecureAuth.Api/Dockerfile
+            dockerfile: SecureAuth.Api/Dockerfile\
+        restart: always
         #ports:
         #    - "8001:8080" # внешний порт 8001 -> внутренний порт 8080
         depends_on:
@@ -27,6 +28,7 @@ services:
         build: 
             context: .
             dockerfile: SecureAuth.WebApp/Dockerfile
+        restart: always
         #ports:
         #    - "8002:8080" # внешний порт 8002 -> внутренний порт 8080
         depends_on:
@@ -48,6 +50,7 @@ services:
     nginx:
         image: nginx:stable-alpine
         container_name: nginx_proxy
+        restart: always
         ports:
             # для http
             - "80:80" # внешний порт 80 -> внутренний порт 80 
@@ -65,6 +68,7 @@ services:
     redis:
         image: redis:latest
         container_name: redis_cache
+        restart: always
 
     # База данных PostgreSQL
     db:
