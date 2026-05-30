@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using SecureAuth.Api.Services;
 using System.Text;
 using System.Threading.RateLimiting;
+using SecureAuth.Analytics.Grpc;
 
 namespace SecureAuth.Api
 {
@@ -92,6 +93,16 @@ namespace SecureAuth.Api
 
             // Регистрация Redis (может понадобиться при масштабировании)
             // builder.Services.AddStackExchangeRedisCache(options => { options.Configuration = "redis:6379"; } );
+
+            builder.Services.AddGrpcClient<EcgAnalytics.EcgAnalyticsClient>("ClassifierClient", options =>
+            {
+                options.Address = new Uri(builder.Configuration["Grpc:ClassifierUrl"] ?? "http://localhost:8081");
+            });
+
+            builder.Services.AddGrpcClient<EcgAnalytics.EcgAnalyticsClient>("SegmenterClient", options =>
+            {
+                options.Address = new Uri(builder.Configuration["Grpc:SegmenterUrl"] ?? "http://localhost:8082");
+            });
 
             // 2. ��������� ��������� ��������� ��������
 

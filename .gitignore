@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Private keys and SSL certificates
+nginx/certs/*.pem
+nginx/certs/*.key
+nginx/certs/*.crt
+
+# SQL-files
+*.sql

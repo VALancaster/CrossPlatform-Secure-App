@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option csharp_namespace = "SecureAuth.Analytics.Grpc";
+
+package analytics;
+
+// Сервис ЭКГ аналитики
+service EcgAnalytics 
+{
+	rpc Analyze (AnalyzeRequest) returns (AnalyzeReply); // метод для получения анализа ЭКГ
+}
+
+message AnalyzeRequest // сообщение-запрос
+{
+	bytes file_content = 1;
+	string file_name = 2;
+}
+
+message AnalyzeReply // сообщение-ответ
+{
+	string result = 1;
+	float confidence = 2;
+}

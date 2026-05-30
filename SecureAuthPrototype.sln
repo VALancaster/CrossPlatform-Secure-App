@@ -24,6 +24,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nginx", "nginx", "{02EA681E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "certs", "certs", "{CC1731BF-D4EE-463C-926D-FB4D1079B5DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureAuth.Classifier", "SecureAuth.Classifier\SecureAuth.Classifier.csproj", "{CD6BDCF6-7595-4F66-9D9A-8ED51B220B50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureAuth.Segmenter", "SecureAuth.Segmenter\SecureAuth.Segmenter.csproj", "{882C4527-5F5A-4C05-AEF8-901227FCEA1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +52,14 @@ Global
 		{A5F433FD-FD4E-4056-ABC1-41F94C894755}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5F433FD-FD4E-4056-ABC1-41F94C894755}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A5F433FD-FD4E-4056-ABC1-41F94C894755}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{CD6BDCF6-7595-4F66-9D9A-8ED51B220B50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD6BDCF6-7595-4F66-9D9A-8ED51B220B50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD6BDCF6-7595-4F66-9D9A-8ED51B220B50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD6BDCF6-7595-4F66-9D9A-8ED51B220B50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{882C4527-5F5A-4C05-AEF8-901227FCEA1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{882C4527-5F5A-4C05-AEF8-901227FCEA1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{882C4527-5F5A-4C05-AEF8-901227FCEA1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{882C4527-5F5A-4C05-AEF8-901227FCEA1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

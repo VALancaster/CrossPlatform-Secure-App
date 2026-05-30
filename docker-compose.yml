@@ -12,6 +12,8 @@ services:
         depends_on:
             - db
             - redis
+            - ecg-classifier
+            - ecg-segmenter
         volumes:
             - apidata:/root/.aspnet/DataProtection-Keys
         environment:
@@ -22,7 +24,33 @@ services:
             - ConnectionStrings__DefaultConnection=Host=db;Database=secureauthdb;Username=secureauthuser;Password=secureauthpassword
             - ASPNETCORE_URLS=http://+:8080
             - Redis_Host=redis
-    
+            - Grpc__ClassifierUrl=http://ecg-classifier:8080
+            - Grpc__SegmenterUrl=http://ecg-segmenter:8080
+
+    # сервис классификации
+    ecg-classifier:
+        build: 
+            context: .
+            dockerfile: SecureAuth.Classifier/Dockerfile
+        restart: always
+        expose:
+            - "8080" # внутренний порт для gRPC
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+            - ASPNETCORE_URLS=http://+:8080
+
+    # сервис сегментации
+    ecg-segmenter:
+        build:
+            context: .
+            dockerfile: SecureAuth.Segmenter/Dockerfile
+        restart: always
+        expose:
+            - "8080" # внутренний порт для gRPC
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+            - ASPNETCORE_URLS=http://+:8080
+
     # WebApp сервер
     webapp:
         build: 
@@ -56,6 +84,7 @@ services:
             - "80:80" # внешний порт 80 -> внутренний порт 80 
             # для https
             - "443:443" # внешний порт 443 -> внутренний порт 443
+            - "16500:443"
         volumes:
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # настройки NGINX
             - ./nginx/certs:/etc/nginx/certs:ro # папка для SSL-сертификатов
