@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SecureAuth.WebApp.Controllers
@@ -78,7 +79,21 @@ namespace SecureAuth.WebApp.Controllers
                 {
                     // получение JSON-ответа от шлюза
                     var jsonResponse = await response.Content.ReadAsStringAsync();
-                    ViewBag.Result = jsonResponse;
+
+                    try
+                    {
+                        // парсинг строки в JSON
+                        using var jsonDoc = JsonDocument.Parse(jsonResponse);
+                        // включение отступов и переносов строк
+                        var options = new JsonSerializerOptions { WriteIndented = true };
+                        // сериализация обратно в строку
+                        ViewBag.Result = JsonSerializer.Serialize(jsonDoc, options);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning($"Failed to format JSON: {ex.Message}");
+                        ViewBag.Result = jsonResponse;
+                    }
                 }
                 else
                 {
