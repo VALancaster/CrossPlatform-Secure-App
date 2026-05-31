@@ -3,6 +3,50 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <h1 class="display-4">Добро пожаловать, @User.Identity.Name!</h1>
+        <p>Вы успешно вошли в систему. Теперь вы можете использовать нейросеть для анализа.</p>
+
+        <div class="row" style="margin-top: 40px;">
+            <div class="col-md-6" style="margin: 0 auto; text-align: center; border: 1px solid #ccc; padding: 25px; border-radius: 8px; background-color: #fff;">
+                <h3>Анализ изображений ЭКГ / MNIST</h3>
+                <hr />
+                    
+                <form action="/Home/UploadEcg" method="post" enctype="multipart/form-data">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <input type="file" name="file" class="form-control-file" required/>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px; width: 100%;">Загрузить и проанализировать</button>
+                </form>
+
+                @if (ViewBag.Result != null)
+                {
+                    <div class="alert alert-success" style="margin-top: 20px; text-align: left;">
+                        <h5>Результат анализа:</h5>
+                        <pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; font-family: Consolas, monospace;">
+                            @ViewBag.Result
+                        </pre>
+                    </div>
+                }
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger" style="margin-top: 20px;">
+                        @ViewBag.Error
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <h1 class="display-4">Welcome</h1>
+        <p>Для использования функций анализа ЭКГ и распознавания нейросетями, пожалуйста, авторизуйтесь.</p>
+        <p style="margin-top: 30px">
+            <a class="btn btn-primary" href="/Account/Login" style="padding: 10px 25px; font-size: 1.1rem; text-decoration: none;">
+                Войти в систему
+            </a>
+        </p>
+    }
 </div>
